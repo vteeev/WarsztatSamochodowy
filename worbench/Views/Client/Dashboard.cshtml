@@ -1,0 +1,63 @@
+@model (IEnumerable<worbench.Models.Vehicle> Vehicles, IEnumerable<worbench.DTOs.ServiceOrderDto> Orders)
+
+<h2>Panel klienta</h2>
+
+<h3>Twoje pojazdy</h3>
+<a asp-controller="Client" asp-action="CreateVehicle" class="btn btn-success mb-2">Dodaj nowe auto</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Marka</th>
+            <th>Model</th>
+            <th>Rok</th>
+            <th>VIN</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var v in Model.Vehicles)
+    {
+        <tr>
+            <td>@v.Make</td>
+            <td>@v.Model</td>
+            <td>@v.Year</td>
+            <td>@v.VIN</td>
+            <td>
+                <a asp-controller="Vehicles" asp-action="Edit" asp-route-id="@v.Id" class="btn btn-sm btn-primary">Edytuj</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Twoje zlecenia</h3>
+<a asp-controller="Client" asp-action="CreateOrder" class="btn btn-success mb-2">Dodaj zlecenie</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Pojazd</th>
+            <th>Status</th>
+            <th>Całkowity koszt</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var o in Model.Orders)
+    {
+        <tr>
+            <td>@o.Id</td>
+            <td>@o.VehicleInfo</td>
+            <td>@o.Status</td>
+            <td>@o.TotalCost.ToString("C")</td>
+            <td>
+                <a asp-controller="Client" asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-info">Szczegóły</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
+    <button type="submit" class="btn btn-danger">Wyloguj</button>
+</form> 

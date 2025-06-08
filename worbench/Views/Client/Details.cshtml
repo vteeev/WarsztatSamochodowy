@@ -1,0 +1,61 @@
+@model worbench.DTOs.ServiceOrderDto
+<h2>Szczegóły zlecenia #@Model.Id</h2>
+<p><b>Pojazd:</b> @Model.VehicleInfo</p>
+<p><b>Status:</b> @Model.Status</p>
+<hr />
+<h4>Czynności</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Opis</th>
+            <th>Koszt robocizny</th>
+            <th>Części</th>
+            <th>Suma części</th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        decimal totalLabor = 0;
+        decimal totalParts = 0;
+    }
+    @foreach (var t in Model.Tasks ?? new List<worbench.DTOs.ServiceTaskDto>())
+    {
+        decimal partsSum = t.Parts?.Sum(up => (up.UnitPrice) * up.Quantity) ?? 0;
+        totalLabor += t.LaborCost;
+        totalParts += partsSum;
+        <tr>
+            <td>@t.Description</td>
+            <td>@t.LaborCost</td>
+            <td>
+                @if (t.Parts != null && t.Parts.Any())
+                {
+                    <ul>
+                    @foreach (var up in t.Parts)
+                    {
+                        <li>@up.Name x @up.Quantity (@up.UnitPrice) = @(up.UnitPrice * up.Quantity)</li>
+                    }
+                    </ul>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </td>
+            <td>@partsSum</td>
+        </tr>
+    }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="1" class="text-end">SUMA:</th>
+            <th>@totalLabor</th>
+            <th></th>
+            <th>@totalParts</th>
+        </tr>
+        <tr>
+            <th colspan="3" class="text-end">Całkowity koszt zlecenia:</th>
+            <th>@(totalLabor + totalParts)</th>
+        </tr>
+    </tfoot>
+</table>
+<a asp-action="Dashboard" class="btn btn-secondary">Powrót</a> 

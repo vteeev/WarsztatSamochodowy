@@ -1,0 +1,30 @@
+@model worbench.Models.ServiceOrder
+@{
+    ViewData["Title"] = "Dodaj zlecenie";
+    var vehicles = ViewBag.Vehicles as List<worbench.Models.Vehicle>;
+}
+
+<h2>Dodaj zlecenie</h2>
+
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+<form asp-action="CreateOrder" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label for="VehicleId">Wybierz pojazd</label>
+        <select class="form-control" id="VehicleId" name="VehicleId" required>
+            <option value="">-- wybierz --</option>
+            @if (vehicles != null)
+            {
+                foreach (var v in vehicles)
+                {
+                    <option value="@v.Id">@v.Make @v.Model (@v.RegistrationNumber)</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Dodaj zlecenie</button>
+        <a asp-action="Dashboard" class="btn btn-secondary">Powrót</a>
+    </div>
+</form> 
