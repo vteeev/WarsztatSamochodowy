@@ -1,0 +1,61 @@
+@model worbench.Models.ServiceOrder
+<h2>Szczegóły zlecenia #@Model.Id</h2>
+<p><b>Pojazd:</b> @Model.Vehicle?.Make @Model.Vehicle?.Model (@Model.Vehicle?.RegistrationNumber)</p>
+<p><b>Status:</b> @Model.Status</p>
+<hr />
+<h4>Czynności</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Opis</th>
+            <th>Koszt robocizny</th>
+            <th>Części</th>
+            <th>Suma części</th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        decimal totalLabor = 0;
+        decimal totalParts = 0;
+    }
+    @foreach (var t in Model.ServiceTasks ?? new List<worbench.Models.ServiceTask>())
+    {
+        decimal partsSum = t.UsedParts?.Sum(up => (up.Part?.UnitPrice ?? 0) * up.Quantity) ?? 0;
+        totalLabor += t.LaborCost;
+        totalParts += partsSum;
+        <tr>
+            <td>@t.Description</td>
+            <td>@t.LaborCost.ToString("C")</td>
+            <td>
+                @if (t.UsedParts != null && t.UsedParts.Any())
+                {
+                    <ul>
+                    @foreach (var up in t.UsedParts)
+                    {
+                        <li>@up.Part?.Name x @up.Quantity (@up.Part?.UnitPrice.ToString("C")) = @((up.Part?.UnitPrice ?? 0) * up.Quantity).ToString("C")</li>
+                    }
+                    </ul>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </td>
+            <td>@partsSum.ToString("C")</td>
+        </tr>
+    }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="1" class="text-end">SUMA:</th>
+            <th>@totalLabor.ToString("C")</th>
+            <th></th>
+            <th>@totalParts.ToString("C")</th>
+        </tr>
+        <tr>
+            <th colspan="3" class="text-end">Całkowity koszt zlecenia:</th>
+            <th>@(totalLabor + totalParts).ToString("C")</th>
+        </tr>
+    </tfoot>
+</table>
+<a asp-action="Dashboard" class="btn btn-secondary">Powrót</a> 
