@@ -1,0 +1,28 @@
+@model IEnumerable<worbench.Models.ServiceTask>
+@{
+    var order = ViewBag.Order as worbench.Models.ServiceOrder;
+}
+<h2>Czynności dla zlecenia #@order.Id</h2>
+<a asp-action="AddTask" asp-route-orderId="@order.Id" class="btn btn-success mb-2">Dodaj czynność</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Opis</th>
+            <th>Koszt robocizny</th>
+            <th>Części</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var t in Model)
+    {
+        <tr>
+            <td>@t.Description</td>
+            <td>@t.LaborCost.ToString("C")</td>
+            <td>
+                <a asp-action="Parts" asp-route-taskId="@t.Id" class="btn btn-sm btn-secondary">Części</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+<a asp-action="Dashboard" class="btn btn-secondary">Powrót</a> 

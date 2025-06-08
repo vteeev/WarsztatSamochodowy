@@ -1,0 +1,37 @@
+@model IEnumerable<worbench.Models.ServiceOrder>
+
+<h2>Panel mechanika - Twoje zlecenia</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Pojazd</th>
+            <th>Koszty</th>
+            <th>Status</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var order in Model)
+    {
+        decimal labor = order.ServiceTasks?.Sum(t => t.LaborCost) ?? 0;
+        decimal parts = order.ServiceTasks?.SelectMany(t => t.UsedParts ?? new List<worbench.Models.UsedPart>()).Sum(up => (up.Part?.UnitPrice ?? 0) * up.Quantity) ?? 0;
+        decimal total = labor + parts;
+        <tr>
+            <td>@order.Id</td>
+            <td>@order.Vehicle?.Make @order.Vehicle?.Model (@order.Vehicle?.RegistrationNumber)</td>
+            <td>@total.ToString("C")<br /><small>(robocizna: @labor.ToString("C"), części: @parts.ToString("C"))</small></td>
+            <td>@order.Status</td>
+            <td>
+                <a asp-controller="Mechanic" asp-action="EditStatus" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Edytuj</a>
+                <a asp-controller="Mechanic" asp-action="ServiceTasks" asp-route-orderId="@order.Id" class="btn btn-sm btn-info">Czynności</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
+    <button type="submit" class="btn btn-danger">Wyloguj</button>
+</form> 

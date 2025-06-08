@@ -1,0 +1,32 @@
+@model worbench.Models.UsedPart
+@{
+    ViewData["Title"] = "Dodaj część";
+    var parts = ViewBag.Parts as List<worbench.Models.Part>;
+    var taskId = ViewBag.TaskId;
+}
+<h2>Dodaj część</h2>
+<form asp-action="AddPart" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="taskId" value="@taskId" />
+    <div class="form-group">
+        <label for="partId">Część</label>
+        <select class="form-control" id="partId" name="partId" required>
+            <option value="">-- wybierz --</option>
+            @if (parts != null)
+            {
+                foreach (var p in parts)
+                {
+                    <option value="@p.Id">@p.Name (@p.UnitPrice.ToString("C"))</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quantity">Ilość</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required />
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Dodaj</button>
+        <a asp-action="Parts" asp-route-taskId="@taskId" class="btn btn-secondary">Powrót</a>
+    </div>
+</form> 

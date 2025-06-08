@@ -1,0 +1,22 @@
+@model worbench.Models.ServiceTask
+@{
+    ViewData["Title"] = "Dodaj czynność";
+    var orderId = ViewBag.OrderId;
+}
+<h2>Dodaj czynność</h2>
+<form asp-action="AddTask" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="orderId" value="@orderId" />
+    <div class="form-group">
+        <label for="description">Opis</label>
+        <input type="text" class="form-control" id="description" name="description" required />
+    </div>
+    <div class="form-group">
+        <label for="laborCost">Koszt robocizny</label>
+        <input type="number" step="0.01" class="form-control" id="laborCost" name="laborCost" required />
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Dodaj</button>
+        <a asp-action="ServiceTasks" asp-route-orderId="@orderId" class="btn btn-secondary">Powrót</a>
+    </div>
+</form> 
