@@ -1,11 +1,19 @@
 is_global = true
 build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = worbench
 build_property.RootNamespace = worbench
@@ -18,6 +26,54 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = C:\Users\Piotrek\RiderProjects\Projekt2\WarsztatSamochodowy\worbench
 build_property._RazorSourceGeneratorDebug = 
 
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Admin/AssignMechanic.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQXNzaWduTWVjaGFuaWMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Admin/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Admin/Orders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cT3JkZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Client/CreateOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50XENyZWF0ZU9yZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Client/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50XERhc2hib2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Client/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50XERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Customers/MyProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJzXE15UHJvZmlsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -26,12 +82,44 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/AddPart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcQWRkUGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/AddTask.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcQWRkVGFzay5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/EditStatus.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcRWRpdFN0YXR1cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/Parts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcUGFydHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Mechanic/ServiceTasks.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVjaGFuaWNcU2VydmljZVRhc2tzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/ServiceOrders/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VydmljZU9yZGVyc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/Vehicles/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmVoaWNsZXNcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Piotrek/RiderProjects/Projekt2/WarsztatSamochodowy/worbench/Views/_ViewImports.cshtml]
