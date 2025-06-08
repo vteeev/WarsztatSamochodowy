@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("worbench")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+132bdfb021fd16d2d1ba88d70f4893fb8a33c884")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f69aa1da1dd42e07c68d8a1c69e67d49dfb9685")]
 [assembly: System.Reflection.AssemblyProductAttribute("worbench")]
 [assembly: System.Reflection.AssemblyTitleAttribute("worbench")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
