@@ -1,0 +1,48 @@
+@model worbench.Models.Customer
+@{
+    ViewData["Title"] = "Mój profil";
+    var vehicles = ViewBag.Vehicles as List<worbench.Models.Vehicle>;
+}
+
+<h2>Mój profil klienta</h2>
+<div class="alert alert-success">Dodano do listy klientów!</div>
+
+<h4>Dane klienta</h4>
+<ul>
+    <li><b>Imię:</b> @Model.FirstName</li>
+    <li><b>Nazwisko:</b> @Model.LastName</li>
+    <li><b>Email:</b> @Model.Email</li>
+    <li><b>Telefon:</b> @Model.Phone</li>
+    <li><b>Adres:</b> @Model.Address</li>
+</ul>
+
+<h4>Twoje pojazdy</h4>
+@if (vehicles == null || !vehicles.Any())
+{
+    <div class="alert alert-info">Nie masz jeszcze przypisanego żadnego pojazdu. Dodaj pojazd, aby móc utworzyć zlecenie serwisowe.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Marka</th>
+                <th>Model</th>
+                <th>Rok</th>
+                <th>VIN</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var v in vehicles)
+        {
+            <tr>
+                <td>@v.Make</td>
+                <td>@v.Model</td>
+                <td>@v.Year</td>
+                <td>@v.VIN</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+<a asp-controller="Vehicles" asp-action="Create" class="btn btn-primary">Dodaj pojazd</a> 
