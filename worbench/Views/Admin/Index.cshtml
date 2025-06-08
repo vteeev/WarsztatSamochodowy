@@ -1,0 +1,52 @@
+@model IEnumerable<worbench.Models.ApplicationUser>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<worbench.Models.ApplicationUser> UserManager
+@inject SignInManager<worbench.Models.ApplicationUser> SignInManager
+
+<h2>Panel administratora - użytkownicy</h2>
+<a asp-action="Orders" class="btn btn-info mb-3">Zlecenia serwisowe</a>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model)
+    {
+        var roles = await UserManager.GetRolesAsync(user);
+        <tr>
+            <td>@user.Email</td>
+            <td>@string.Join(", ", roles)</td>
+            <td>
+                <form asp-action="ChangeRole" method="post" style="display:inline">
+                    <input type="hidden" name="userId" value="@user.Id" />
+                    <select name="newRole" class="form-select form-select-sm" style="width:auto;display:inline-block">
+                        @foreach (var role in new[] { "Admin", "Mechanik", "Recepcjonista", "Klient" })
+                        {
+                            <option value="@role" selected="@(roles.Contains(role) ? "selected" : null)">@role</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Zmień rolę</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
+    <button type="submit" class="btn btn-danger">Wyloguj</button>
+</form> 

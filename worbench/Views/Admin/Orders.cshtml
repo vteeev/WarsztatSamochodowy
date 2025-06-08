@@ -1,0 +1,35 @@
+@model IEnumerable<worbench.DTOs.ServiceOrderDto>
+
+<h2>Zlecenia serwisowe</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Pojazd</th>
+            <th>Status</th>
+            <th>Mechanik</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var o in Model)
+    {
+        <tr>
+            <td>@o.Id</td>
+            <td>@o.VehicleInfo</td>
+            <td>@o.Status</td>
+            <td>@(o.MechanicEmail ?? "-")</td>
+            <td>
+                <a asp-action="AssignMechanic" asp-route-orderId="@o.Id" class="btn btn-sm btn-primary">Przypisz mechanika</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+<a asp-action="Index" class="btn btn-secondary">Powrót</a> 
