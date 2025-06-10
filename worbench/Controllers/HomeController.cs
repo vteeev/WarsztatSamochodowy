@@ -19,7 +19,7 @@ public class HomeController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index() 
     {
         var user = await _userManager.GetUserAsync(User);
         if (user != null)

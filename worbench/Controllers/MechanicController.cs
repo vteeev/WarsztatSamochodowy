@@ -2,122 +2,147 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using worbench.Models;
-using worbench.Data;
-using System.Linq;
+using worbench.Services;  // Używamy serwisów
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace worbench.Controllers
 {
     [Authorize(Roles = "Mechanik")]
     public class MechanicController : Controller
     {
+        private readonly IMechanicService _mechanicService;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly WorkshopDbContext _context;
 
-        public MechanicController(UserManager<ApplicationUser> userManager, WorkshopDbContext context)
+        // Konstruktor wstrzykujący zależności do kontrolera
+        public MechanicController(IMechanicService mechanicService, UserManager<ApplicationUser> userManager)
         {
+            _mechanicService = mechanicService;
             _userManager = userManager;
-            _context = context;
         }
 
+        // Wyświetlenie dashboardu mechanika
         public async Task<IActionResult> Dashboard()
         {
             var user = await _userManager.GetUserAsync(User);
-            var orders = _context.ServiceOrders
-                .Include(o => o.Vehicle)
-                .Include(o => o.ServiceTasks)
-                    .ThenInclude(t => t.UsedParts)
-                        .ThenInclude(up => up.Part)
-                .Where(o => o.AssignedMechanicId == user.Id)
-                .ToList();
+            var orders = await _mechanicService.GetOrdersForMechanicAsync(user.Id.ToString());  // Pass mechanicId as string
+
             return View(orders);
         }
 
-        public IActionResult ServiceTasks(int orderId)
+        // Wyświetlenie zadań dla konkretnego zlecenia
+        public async Task<IActionResult> ServiceTasks(int orderId)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == orderId);
-            if (order == null) return NotFound();
-            var tasks = _context.ServiceTasks.Where(t => t.ServiceOrderId == orderId).ToList();
+            var tasks = await _mechanicService.GetTasksForOrderAsync(orderId);  // Pobieramy zadania zlecenia
+            var order = await _mechanicService.GetServiceOrderByIdAsync(orderId);  // Pobieramy zlecenie
+
+            if (order == null)
+            {
+                return NotFound();  // Jeśli zlecenie nie istnieje, zwracamy 404
+            }
+
             ViewBag.Order = order;
-            return View(tasks);
+            return View(tasks);  // Zwracamy widok z zadaniami
         }
 
+        // Dodanie nowego zadania do zlecenia
         [HttpGet]
         public IActionResult AddTask(int orderId)
         {
             ViewBag.OrderId = orderId;
-            return View();
+            return View();  // Zwracamy widok formularza
         }
 
+        // Dodanie nowego zadania (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTask(int orderId, string description, decimal laborCost)
         {
             var task = new ServiceTask { ServiceOrderId = orderId, Description = description, LaborCost = laborCost };
+
             if (ModelState.IsValid)
             {
-                _context.ServiceTasks.Add(task);
-                await _context.SaveChangesAsync();
+                await _mechanicService.AddTaskToOrderAsync(task);  // Korzystamy z serwisu do dodania zadania
                 return RedirectToAction("ServiceTasks", new { orderId });
             }
+
             ViewBag.OrderId = orderId;
-            return View(task);
+            return View(task);  // Jeśli dane są niepoprawne, wracamy do formularza
         }
 
-        public IActionResult Parts(int taskId)
+        // Wyświetlenie części użytych w zadaniu
+        public async Task<IActionResult> Parts(int taskId)
         {
-            var task = _context.ServiceTasks.FirstOrDefault(t => t.Id == taskId);
-            if (task == null) return NotFound();
-            var usedParts = _context.UsedParts.Include(p => p.Part).Where(p => p.ServiceTaskId == taskId).ToList();
+            var usedParts = await _mechanicService.GetPartsForTaskAsync(taskId);  // Pobieramy części z serwisu
+            var task = await _mechanicService.GetServiceTaskByIdAsync(taskId);  // Pobieramy zadanie
+
+            if (task == null)
+            {
+                return NotFound();  // Jeśli zadanie nie istnieje, zwracamy 404
+            }
+
             ViewBag.Task = task;
-            return View(usedParts);
+            return View(usedParts);  // Zwracamy widok z częściami
         }
 
+        // Dodanie nowej części do zadania
         [HttpGet]
-        public IActionResult AddPart(int taskId)
+        public async Task<IActionResult> AddPart(int taskId)
         {
-            var parts = _context.Parts.ToList();
+            var parts = await _mechanicService.GetPartsAsync();  // Pobieramy części z serwisu
             ViewBag.Parts = parts;
             ViewBag.TaskId = taskId;
-            return View();
+            return View();  // Zwracamy formularz
         }
 
+        // Dodanie nowej części (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPart(int taskId, int partId, int quantity)
         {
             var usedPart = new UsedPart { ServiceTaskId = taskId, PartId = partId, Quantity = quantity };
+
             if (ModelState.IsValid)
             {
-                _context.UsedParts.Add(usedPart);
-                await _context.SaveChangesAsync();
+                await _mechanicService.AddPartToTaskAsync(usedPart);  // Korzystamy z serwisu do dodania części
                 return RedirectToAction("Parts", new { taskId });
             }
-            var parts = _context.Parts.ToList();
+
+            var parts = await _mechanicService.GetPartsAsync();  // Pobieramy części w razie błędu
             ViewBag.Parts = parts;
             ViewBag.TaskId = taskId;
-            return View(usedPart);
+            return View(usedPart);  // Zwracamy formularz z błędami
         }
 
+        // Zmiana statusu zlecenia
         [HttpGet]
-        public IActionResult EditStatus(int id)
+        public async Task<IActionResult> EditStatus(int id)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == id);
-            if (order == null) return NotFound();
-            ViewBag.Statuses = new[] { "Nowe", "W realizacji", "Gotowe" };
-            return View(order);
+            var order = await _mechanicService.GetServiceOrderByIdAsync(id);  // Pobieramy zlecenie
+
+            if (order == null)
+            {
+                return NotFound();  // Jeśli zlecenie nie istnieje, zwracamy 404
+            }
+
+            ViewBag.Statuses = new[] { "Nowe", "W realizacji", "Gotowe" };  // Dostępne statusy
+            return View(order);  // Zwracamy widok z formularzem
         }
 
+        // Zmiana statusu (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditStatus(int id, string status)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == id);
-            if (order == null) return NotFound();
+            var order = await _mechanicService.GetServiceOrderByIdAsync(id);  // Pobieramy zlecenie
+
+            if (order == null)
+            {
+                return NotFound();  // Jeśli zlecenie nie istnieje, zwracamy 404
+            }
+
             order.Status = status;
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Dashboard");
+            await _mechanicService.UpdateServiceOrderAsync(order);  // Korzystamy z serwisu do zapisania zmiany statusu
+            return RedirectToAction("Dashboard");  // Po zapisaniu przekierowujemy na dashboard
         }
     }
-} 
+}

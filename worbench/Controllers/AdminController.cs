@@ -9,7 +9,7 @@ using worbench.Mappers;
 
 namespace worbench.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]  // ogranicza dostęp do metod w tym kontrolerze
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -25,7 +25,7 @@ namespace worbench.Controllers
 
         public IActionResult Index()
         {
-            var users = _userManager.Users.ToList();
+            var users = _userManager.Users.ToList(); 
             return View(users);
         }
 
@@ -61,7 +61,7 @@ namespace worbench.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Orders()
+        public IActionResult Orders() //wyświetlanie zleceń
         {
             var orders = _context.ServiceOrders.Include(o => o.Vehicle).Include(o => o.AssignedMechanic).ToList();
             var orderDtos = orders.Select(Mappers.ServiceOrderMapper.ToDtoWithCustom).ToList();
@@ -69,7 +69,7 @@ namespace worbench.Controllers
         }
 
         [HttpGet]
-        public IActionResult AssignMechanic(int orderId)
+        public IActionResult AssignMechanic(int orderId) //przypisanie mechanika do zlecenia
         {
             var order = _context.ServiceOrders.Include(o => o.Vehicle).FirstOrDefault(o => o.Id == orderId);
             if (order == null) return NotFound();

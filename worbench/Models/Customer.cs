@@ -15,6 +15,7 @@ public class Customer
     public string Phone { get; set; } = default!;
     [Required(ErrorMessage = "Adres jest wymagany")]
     public string Address { get; set; } = default!;
+    
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public int UserId { get; set; }
     // Jeśli potrzebujesz nawigacji:
