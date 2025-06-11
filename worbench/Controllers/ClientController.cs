@@ -10,43 +10,62 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.Extensions.Logging;  // Dodaj przestrzeń nazw dla ILogger
 
 namespace worbench.Controllers
 {
-
     public class ClientController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly WorkshopDbContext _context;
+        private readonly ILogger<ClientController> _logger;  // Deklaracja loggera
 
-        public ClientController(UserManager<ApplicationUser> userManager, WorkshopDbContext context)
+        // Wstrzyknięcie zależności do loggera
+        public ClientController(UserManager<ApplicationUser> userManager, WorkshopDbContext context, ILogger<ClientController> logger)
         {
             _userManager = userManager;
             _context = context;
+            _logger = logger;  // Inicjalizacja loggera
         }
 
         public async Task<IActionResult> Dashboard()
         {
-            var user = await _userManager.GetUserAsync(User);
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
-
-            if (customer == null)
+            try
             {
-                // Przekieruj do formularza tworzenia Customer
-                return RedirectToAction("Create", "Customers");
-            }
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    // Jeśli użytkownik nie jest zalogowany, przekieruj go do strony logowania.
+                    return RedirectToAction("Login", "Account");
+                }
 
-            var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
-            var orders = await _context.ServiceOrders
-                .Include(o => o.Vehicle)
-                .Include(o => o.ServiceTasks)
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+                if (customer == null)
+                {
+                    // Jeśli klient nie został znaleziony, przekieruj do formularza tworzenia klienta.
+                    return RedirectToAction("Create", "Customers");
+                }
+
+                var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
+                var orders = await _context.ServiceOrders
+                    .Include(o => o.Vehicle)
+                    .Include(o => o.ServiceTasks)
                     .ThenInclude(t => t.UsedParts)
-                        .ThenInclude(up => up.Part)
-                .Where(o => o.Vehicle.CustomerId == customer.Id)
-                .ToListAsync();
+                    .ThenInclude(up => up.Part)
+                    .Where(o => o.Vehicle.CustomerId == customer.Id)
+                    .ToListAsync();
 
-            var orderDtos = orders.Select(ServiceOrderMapper.ToDtoWithCustom).ToList();
-            return View("Dashboard", (vehicles.AsEnumerable(), orderDtos.AsEnumerable()));
+                var orderDtos = orders.Select(ServiceOrderMapper.ToDtoWithCustom).ToList();
+
+                return View("Dashboard", (vehicles.AsEnumerable(), orderDtos.AsEnumerable()));
+            }
+            catch (Exception ex)
+            {
+                // Logowanie błędu w przypadku wystąpienia problemu
+                _logger.LogError($"Błąd podczas ładowania dashboardu: {ex.Message}");
+                TempData["Error"] = "Wystąpił błąd podczas ładowania danych.";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // GET: Client/CreateVehicle
@@ -73,22 +92,23 @@ namespace worbench.Controllers
             }
 
             vehicle.CustomerId = customer.Id;
+
             if (ModelState.IsValid)
             {
-                _context.Add(vehicle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Dashboard", "Client");
-            }
-            // ZAWSZE jawnie podaj ścieżkę do widoku:
-            foreach (var modelStateKey in ModelState.Keys)
-            {
-                var value = ModelState[modelStateKey];
-                foreach (var error in value.Errors)
+                try
                 {
-                    Console.WriteLine($"Błąd w polu {modelStateKey}: {error.ErrorMessage}");
+                    _context.Add(vehicle);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Dashboard", "Client");
+                }
+                catch (Exception ex)
+                {
+                    // Logowanie błędów przy zapisie danych
+                    _logger.LogError($"Błąd podczas dodawania pojazdu: {ex.Message}");
+                    TempData["Error"] = "Nie udało się dodać pojazdu. Spróbuj ponownie.";
                 }
             }
-
+            // Przekazanie błędów walidacji do widoku, jeśli model nie jest poprawny
             return View("~/Views/Vehicles/Create.cshtml", vehicle);
         }
 
@@ -117,18 +137,37 @@ namespace worbench.Controllers
             {
                 return RedirectToAction("Create", "Customers");
             }
+
+            var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == VehicleId && v.CustomerId == customer.Id);
+            if (vehicle == null)
+            {
+                TempData["Error"] = "Nie znaleziono pojazdu.";
+                return RedirectToAction("Dashboard", "Client");
+            }
+
             var order = new ServiceOrder
             {
                 VehicleId = VehicleId,
                 CreatedAt = DateTime.Now,
                 Status = "Nowe"
             };
+
             if (ModelState.IsValid)
             {
-                _context.ServiceOrders.Add(order);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Dashboard");
+                try
+                {
+                    _context.ServiceOrders.Add(order);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Dashboard", "Client");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Błąd podczas dodawania zlecenia: {ex.Message}");
+                    TempData["Error"] = "Nie udało się dodać zlecenia. Spróbuj ponownie.";
+                }
             }
+
+            // W przypadku błędu, przekaż ponownie pojazdy do widoku
             var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
             ViewBag.Vehicles = vehicles;
             return View(order);
@@ -146,17 +185,5 @@ namespace worbench.Controllers
             var dto = ServiceOrderMapper.ToDtoWithCustom(order);
             return View(dto);
         }
-
-/*
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Customer customer)
-        {
-            var userId = _userManager.GetUserId(User);
-            customer.UserId = Guid.Parse(userId); // jeśli UserId to Guid
-            _context.Add(customer);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Dashboard", "Client");
-        }*/
     }
-} 
+}
