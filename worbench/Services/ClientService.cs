@@ -33,6 +33,13 @@ namespace worbench.Services
 
         public async Task AddVehicleAsync(Vehicle vehicle)
         {
+            // Walidacja VIN, żeby upewnić się, że pojazd z tym VIN już nie istnieje
+            var existingVehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.VIN == vehicle.VIN);
+            if (existingVehicle != null)
+            {
+                throw new Exception("Pojazd o tym VIN już istnieje w systemie.");
+            }
+
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
         }

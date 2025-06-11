@@ -40,9 +40,17 @@ namespace worbench.Services
         // Dodawanie nowego zlecenia
         public async Task AddServiceOrderAsync(ServiceOrder serviceOrder)
         {
+            // Sprawdzamy, czy pojazd istnieje
+            var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == serviceOrder.VehicleId);
+            if (vehicle == null)
+            {
+                throw new Exception("Pojazd przypisany do zlecenia nie istnieje.");
+            }
+
             _context.ServiceOrders.Add(serviceOrder);
             await _context.SaveChangesAsync();
         }
+
 
         // Aktualizacja zlecenia
         public async Task UpdateServiceOrderAsync(ServiceOrder serviceOrder)

@@ -2,49 +2,60 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using worbench.Models;
-using worbench.Services;  // Używamy serwisów
+using worbench.Data;
+using worbench.Mappers;
+using worbench.DTOs;
+
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace worbench.Controllers
 {
-    [Authorize]
+
     public class ClientController : Controller
     {
-        private readonly IClientService _clientService;  // Wstrzykujemy serwis
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly WorkshopDbContext _context;
 
-        // Konstruktor wstrzykujący zależności do kontrolera
-        public ClientController(IClientService clientService, UserManager<ApplicationUser> userManager)
+        public ClientController(UserManager<ApplicationUser> userManager, WorkshopDbContext context)
         {
-            _clientService = clientService;
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Dashboard()
         {
             var user = await _userManager.GetUserAsync(User);
-            var customer = await _clientService.GetCustomerByIdAsync(user.Id);  // Korzystamy z serwisu
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
 
             if (customer == null)
             {
+                // Przekieruj do formularza tworzenia Customer
                 return RedirectToAction("Create", "Customers");
             }
 
-            var vehicles = await _clientService.GetVehiclesByCustomerIdAsync(customer.Id);
-            var orders = await _clientService.GetServiceOrdersByCustomerIdAsync(customer.Id);
+            var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
+            var orders = await _context.ServiceOrders
+                .Include(o => o.Vehicle)
+                .Include(o => o.ServiceTasks)
+                    .ThenInclude(t => t.UsedParts)
+                        .ThenInclude(up => up.Part)
+                .Where(o => o.Vehicle.CustomerId == customer.Id)
+                .ToListAsync();
 
-            ViewBag.Vehicles = vehicles; // Przekazujemy pojazdy do widoku
-            ViewBag.Orders = orders.Select(ServiceOrderMapper.ToDtoWithCustom); // Przekazujemy zlecenia do widoku
-
-            return View();
+            var orderDtos = orders.Select(ServiceOrderMapper.ToDtoWithCustom).ToList();
+            return View("Dashboard", (vehicles.AsEnumerable(), orderDtos.AsEnumerable()));
         }
 
+        // GET: Client/CreateVehicle
         public IActionResult CreateVehicle()
         {
             return View("~/Views/Vehicles/Create.cshtml");
         }
 
+        // POST: Client/CreateVehicle
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateVehicle([Bind("Make,Model,Year,VIN,RegistrationNumber,ImageUrl")] Vehicle vehicle)
@@ -55,7 +66,7 @@ namespace worbench.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var customer = await _clientService.GetCustomerByIdAsync(user.Id);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (customer == null)
             {
                 return RedirectToAction("Create", "Customers");
@@ -64,60 +75,88 @@ namespace worbench.Controllers
             vehicle.CustomerId = customer.Id;
             if (ModelState.IsValid)
             {
-                await _clientService.AddVehicleAsync(vehicle);
+                _context.Add(vehicle);
+                await _context.SaveChangesAsync();
                 return RedirectToAction("Dashboard", "Client");
             }
+            // ZAWSZE jawnie podaj ścieżkę do widoku:
+            foreach (var modelStateKey in ModelState.Keys)
+            {
+                var value = ModelState[modelStateKey];
+                foreach (var error in value.Errors)
+                {
+                    Console.WriteLine($"Błąd w polu {modelStateKey}: {error.ErrorMessage}");
+                }
+            }
+
             return View("~/Views/Vehicles/Create.cshtml", vehicle);
         }
 
+        // GET: Client/CreateOrder
         public async Task<IActionResult> CreateOrder()
         {
             var user = await _userManager.GetUserAsync(User);
-            var customer = await _clientService.GetCustomerByIdAsync(user.Id);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (customer == null)
             {
                 return RedirectToAction("Create", "Customers");
             }
-
-            var vehicles = await _clientService.GetVehiclesByCustomerIdAsync(customer.Id);
+            var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
             ViewBag.Vehicles = vehicles;
             return View();
         }
 
+        // POST: Client/CreateOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrder(int VehicleId)
         {
             var user = await _userManager.GetUserAsync(User);
-            var customer = await _clientService.GetCustomerByIdAsync(user.Id);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (customer == null)
             {
                 return RedirectToAction("Create", "Customers");
             }
-
             var order = new ServiceOrder
             {
                 VehicleId = VehicleId,
                 CreatedAt = DateTime.Now,
                 Status = "Nowe"
             };
-
             if (ModelState.IsValid)
             {
-                await _clientService.AddServiceOrderAsync(order);
-                return RedirectToAction("Dashboard", "Client");
+                _context.ServiceOrders.Add(order);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Dashboard");
             }
-
-            var vehicles = await _clientService.GetVehiclesByCustomerIdAsync(customer.Id);
+            var vehicles = await _context.Vehicles.Where(v => v.CustomerId == customer.Id).ToListAsync();
             ViewBag.Vehicles = vehicles;
             return View(order);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var order = await _clientService.GetServiceOrderByIdAsync(id);
+            var order = await _context.ServiceOrders
+                .Include(o => o.Vehicle)
+                .Include(o => o.ServiceTasks)
+                    .ThenInclude(t => t.UsedParts)
+                        .ThenInclude(up => up.Part)
+                .FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
-            return View(order);
+            var dto = ServiceOrderMapper.ToDtoWithCustom(order);
+            return View(dto);
         }
+
+/*
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Customer customer)
+        {
+            var userId = _userManager.GetUserId(User);
+            customer.UserId = Guid.Parse(userId); // jeśli UserId to Guid
+            _context.Add(customer);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Dashboard", "Client");
+        }*/
     }
-}
+} 
