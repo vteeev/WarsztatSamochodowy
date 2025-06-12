@@ -660,3 +660,8 @@ C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\obj\Debug\net8.0\refint\worb
 C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\obj\Debug\net8.0\worbench.pdb
 C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\obj\Debug\net8.0\worbench.genruntimeconfig.cache
 C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\obj\Debug\net8.0\ref\worbench.dll
+C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\bin\Debug\net8.0\PdfSharpCore.dll
+C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\bin\Debug\net8.0\ICSharpCode.SharpZipLib.dll
+C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\bin\Debug\net8.0\SixLabors.Fonts.dll
+C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\bin\Debug\net8.0\SixLabors.ImageSharp.dll
+C:\Users\damia\Desktop\WarsztatSamochodowy\worbench\bin\Debug\net8.0\de\PdfSharpCore.resources.dll

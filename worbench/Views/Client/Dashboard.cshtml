@@ -6,13 +6,13 @@
 <a asp-controller="Client" asp-action="CreateVehicle" class="btn btn-success mb-2">Dodaj nowe auto</a>
 <table class="table">
     <thead>
-        <tr>
-            <th>Marka</th>
-            <th>Model</th>
-            <th>Rok</th>
-            <th>VIN</th>
-            <th>Akcje</th>
-        </tr>
+    <tr>
+        <th>Marka</th>
+        <th>Model</th>
+        <th>Rok</th>
+        <th>VIN</th>
+        <th>Akcje</th>
+    </tr>
     </thead>
     <tbody>
     @foreach (var v in Model.Vehicles)
@@ -34,13 +34,13 @@
 <a asp-controller="Client" asp-action="CreateOrder" class="btn btn-success mb-2">Dodaj zlecenie</a>
 <table class="table">
     <thead>
-        <tr>
-            <th>ID</th>
-            <th>Pojazd</th>
-            <th>Status</th>
-            <th>Całkowity koszt</th>
-            <th>Akcje</th>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <th>Pojazd</th>
+        <th>Status</th>
+        <th>Całkowity koszt</th>
+        <th>Akcje</th>
+    </tr>
     </thead>
     <tbody>
     @foreach (var o in Model.Orders)
@@ -58,6 +58,9 @@
     </tbody>
 </table>
 
+<!-- Przycisk do generowania raportu PDF -->
+<a href="@Url.Action("GenerateReport", "Client")" class="btn btn-primary mb-2">Pobierz raport PDF</a>
+
 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
     <button type="submit" class="btn btn-danger">Wyloguj</button>
-</form> 
+</form>

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Drawing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using worbench.Models;
@@ -27,7 +29,77 @@ namespace worbench.Controllers
             _context = context;
             _logger = logger;  // Inicjalizacja loggera
         }
+ // Generowanie raportu PDF
+    public async Task<IActionResult> GenerateReport()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
 
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+        if (customer == null)
+        {
+            return RedirectToAction("Create", "Customers");
+        }
+
+        var orders = await _context.ServiceOrders
+            .Include(o => o.Vehicle)
+            .Where(o => o.Vehicle.CustomerId == customer.Id)
+            .ToListAsync();
+
+        // Tworzenie dokumentu PDF
+        var document = new PdfDocument();
+        document.Info.Title = "Raport zleceń serwisowych";
+
+        // Dodanie strony
+        var page = document.AddPage();
+        var gfx = XGraphics.FromPdfPage(page);
+        var font = new XFont("Verdana", 12, XFontStyle.Regular);
+
+        // Dodanie tytułu raportu
+        int yPoint = 20;
+        gfx.DrawString("Raport zleceń serwisowych dla klienta", font, XBrushes.Black, new XPoint(20, yPoint));
+        yPoint += 20;
+
+        // Iterowanie przez zlecenia klienta
+        foreach (var order in orders)
+        {
+            gfx.DrawString($"Zlecenie ID: {order.Id}", font, XBrushes.Black, new XPoint(20, yPoint));
+            yPoint += 20;
+            gfx.DrawString($"Pojazd: {order.Vehicle?.Make} {order.Vehicle?.Model}", font, XBrushes.Black, new XPoint(20, yPoint));
+            yPoint += 20;
+            gfx.DrawString($"Status: {order.Status}", font, XBrushes.Black, new XPoint(20, yPoint));
+            yPoint += 20;
+
+            // Iterowanie przez zadania w zleceniu
+            foreach (var task in order.ServiceTasks)
+            {
+                gfx.DrawString($"Czynność: {task.Description} - Koszt robocizny: {task.LaborCost} PLN", font, XBrushes.Black, new XPoint(20, yPoint));
+                yPoint += 20;
+
+                // Iterowanie przez części użyte w zadaniu
+                foreach (var usedPart in task.UsedParts)
+                {
+                    gfx.DrawString($"Część: {usedPart.Part?.Name} - Ilość: {usedPart.Quantity} - Cena: {usedPart.Part?.UnitPrice * usedPart.Quantity} PLN", font, XBrushes.Black, new XPoint(20, yPoint));
+                    yPoint += 20;
+                }
+            }
+
+            yPoint += 20;  // Dodajemy odstęp po każdym zleceniu
+        }
+
+        // Zapisz dokument PDF do strumienia pamięci
+        using (var memoryStream = new MemoryStream())
+        {
+            document.Save(memoryStream, false);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return File(memoryStream.ToArray(), "application/pdf", "Raport_zlecen.pdf");
+        }
+    }
+
+        
         public async Task<IActionResult> Dashboard()
         {
             try
