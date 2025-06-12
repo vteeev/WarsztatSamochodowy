@@ -4,7 +4,10 @@
 @inject SignInManager<worbench.Models.ApplicationUser> SignInManager
 
 <h2>Panel administratora - użytkownicy</h2>
-<a asp-action="Orders" class="btn btn-info mb-3">Zlecenia serwisowe</a>
+<div class="mb-3">
+    <a asp-action="Orders" class="btn btn-info">Zlecenia serwisowe</a>
+    <a asp-action="GeneratePdfReport" class="btn btn-success">Generuj raport PDF</a>
+</div>
 
 @if (TempData["Error"] != null)
 {

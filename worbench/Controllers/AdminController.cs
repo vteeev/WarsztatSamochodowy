@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using worbench.Mappers;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+using System;
 
 namespace worbench.Controllers
 {
@@ -88,6 +92,74 @@ namespace worbench.Controllers
             await _context.SaveChangesAsync();
             TempData["Success"] = "Mechanik został przypisany do zlecenia.";
             return RedirectToAction("Orders");
+        }
+
+        public IActionResult GeneratePdfReport()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document document = new Document(PageSize.A4, 25, 25, 30, 30);
+                PdfWriter writer = PdfWriter.GetInstance(document, ms);
+                document.Open();
+
+                // Add title
+                Font titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+                Paragraph title = new Paragraph("Raport zleceń serwisowych", titleFont);
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingAfter = 20f;
+                document.Add(title);
+
+                // Get all service orders with related data
+                var orders = _context.ServiceOrders
+                    .Include(o => o.Vehicle)
+                    .Include(o => o.AssignedMechanic)
+                    .Include(o => o.ServiceTasks)
+                        .ThenInclude(t => t.UsedParts)
+                            .ThenInclude(p => p.Part)
+                    .ToList();
+
+                foreach (var order in orders)
+                {
+                    // Add order information
+                    Font orderFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+                    Paragraph orderInfo = new Paragraph($"Zlecenie #{order.Id}", orderFont);
+                    orderInfo.SpacingBefore = 10f;
+                    orderInfo.SpacingAfter = 5f;
+                    document.Add(orderInfo);
+
+                    // Add order details
+                    Font normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+                    document.Add(new Paragraph($"Pojazd: {order.Vehicle?.Make} {order.Vehicle?.Model}", normalFont));
+                    document.Add(new Paragraph($"Mechanik: {order.AssignedMechanic?.Email ?? "Nieprzypisany"}", normalFont));
+                    document.Add(new Paragraph($"Status: {order.Status}", normalFont));
+                    document.Add(new Paragraph($"Data utworzenia: {order.CreatedAt:dd.MM.yyyy}", normalFont));
+
+                    // Add service tasks
+                    if (order.ServiceTasks.Any())
+                    {
+                        document.Add(new Paragraph("Zadania serwisowe:", normalFont));
+                        PdfPTable taskTable = new PdfPTable(3);
+                        taskTable.WidthPercentage = 100;
+                        taskTable.AddCell("Opis");
+                        taskTable.AddCell("Koszt robocizny");
+                        taskTable.AddCell("Części");
+
+                        foreach (var task in order.ServiceTasks)
+                        {
+                            taskTable.AddCell(task.Description);
+                            taskTable.AddCell(task.LaborCost.ToString("C"));
+                            taskTable.AddCell(string.Join(", ", task.UsedParts.Select(p => p.Part.Name)));
+                        }
+                        document.Add(taskTable);
+                    }
+
+                    document.Add(new Paragraph("\n"));
+                }
+
+                document.Close();
+                byte[] bytes = ms.ToArray();
+                return File(bytes, "application/pdf", $"raport_zlecen_{DateTime.Now:yyyyMMdd}.pdf");
+            }
         }
     }
 } 
