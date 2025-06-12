@@ -2,10 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using worbench.Models;
-using worbench.Data;
-using System.Linq;
+using worbench.Services;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using worbench.DTOs;
 
 namespace worbench.Controllers
 {
@@ -13,33 +12,29 @@ namespace worbench.Controllers
     public class MechanicController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly WorkshopDbContext _context;
+        private readonly IMechanicService _mechanicService;
 
-        public MechanicController(UserManager<ApplicationUser> userManager, WorkshopDbContext context)
+        public MechanicController(UserManager<ApplicationUser> userManager, IMechanicService mechanicService)
         {
             _userManager = userManager;
-            _context = context;
+            _mechanicService = mechanicService;
         }
 
         public async Task<IActionResult> Dashboard()
         {
             var user = await _userManager.GetUserAsync(User);
-            var orders = _context.ServiceOrders
-                .Include(o => o.Vehicle)
-                .Include(o => o.ServiceTasks)
-                    .ThenInclude(t => t.UsedParts)
-                        .ThenInclude(up => up.Part)
-                .Where(o => o.AssignedMechanicId == user.Id)
-                .ToList();
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var orders = await _mechanicService.GetDashboardData(user.Id);
             return View(orders);
         }
 
-        public IActionResult ServiceTasks(int orderId)
+        public async Task<IActionResult> ServiceTasks(int orderId)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == orderId);
-            if (order == null) return NotFound();
-            var tasks = _context.ServiceTasks.Where(t => t.ServiceOrderId == orderId).ToList();
-            ViewBag.Order = order;
+            var tasks = await _mechanicService.GetServiceTasks(orderId);
             return View(tasks);
         }
 
@@ -54,32 +49,25 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTask(int orderId, string description, decimal laborCost)
         {
-            var task = new ServiceTask { ServiceOrderId = orderId, Description = description, LaborCost = laborCost };
-            if (ModelState.IsValid)
+            var result = await _mechanicService.AddServiceTask(orderId, description, laborCost);
+            if (result.Message != null)
             {
-                _context.ServiceTasks.Add(task);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("ServiceTasks", new { orderId });
+                TempData["Success"] = result.Message;
             }
-            ViewBag.OrderId = orderId;
-            return View(task);
+            return result.Result;
         }
 
-        public IActionResult Parts(int taskId)
+        public async Task<IActionResult> Parts(int taskId)
         {
-            var task = _context.ServiceTasks.FirstOrDefault(t => t.Id == taskId);
-            if (task == null) return NotFound();
-            var usedParts = _context.UsedParts.Include(p => p.Part).Where(p => p.ServiceTaskId == taskId).ToList();
-            ViewBag.Task = task;
-            return View(usedParts);
+            var parts = await _mechanicService.GetUsedParts(taskId);
+            return View(parts);
         }
 
         [HttpGet]
         public IActionResult AddPart(int taskId)
         {
-            var parts = _context.Parts.ToList();
-            ViewBag.Parts = parts;
             ViewBag.TaskId = taskId;
+            ViewBag.Parts = await _mechanicService.GetAvailableParts();
             return View();
         }
 
@@ -87,25 +75,21 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPart(int taskId, int partId, int quantity)
         {
-            var usedPart = new UsedPart { ServiceTaskId = taskId, PartId = partId, Quantity = quantity };
-            if (ModelState.IsValid)
+            var result = await _mechanicService.AddUsedPart(taskId, partId, quantity);
+            if (result.Message != null)
             {
-                _context.UsedParts.Add(usedPart);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Parts", new { taskId });
+                TempData["Success"] = result.Message;
             }
-            var parts = _context.Parts.ToList();
-            ViewBag.Parts = parts;
-            ViewBag.TaskId = taskId;
-            return View(usedPart);
+            return result.Result;
         }
 
         [HttpGet]
         public IActionResult EditStatus(int id)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == id);
+            var order = await _mechanicService.GetOrderById(id);
             if (order == null) return NotFound();
-            ViewBag.Statuses = new[] { "Nowe", "W realizacji", "Gotowe" };
+
+            ViewBag.Statuses = new[] { "Nowe", "W trakcie", "Oczekuje na części", "Zakończone", "Anulowane" };
             return View(order);
         }
 
@@ -113,11 +97,12 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditStatus(int id, string status)
         {
-            var order = _context.ServiceOrders.FirstOrDefault(o => o.Id == id);
-            if (order == null) return NotFound();
-            order.Status = status;
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Dashboard");
+            var result = await _mechanicService.UpdateOrderStatus(id, status);
+            if (result.Message != null)
+            {
+                TempData["Success"] = result.Message;
+            }
+            return result.Result;
         }
     }
 } 

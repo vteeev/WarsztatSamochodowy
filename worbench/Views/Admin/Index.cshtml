@@ -34,7 +34,7 @@
             <td>@user.Email</td>
             <td>@string.Join(", ", roles)</td>
             <td>
-                <form asp-action="ChangeRole" method="post" style="display:inline">
+                <form asp-action="ChangeUserRole" method="post" style="display:inline">
                     <input type="hidden" name="userId" value="@user.Id" />
                     <select name="newRole" class="form-select form-select-sm" style="width:auto;display:inline-block">
                         @foreach (var role in new[] { "Admin", "Mechanik", "Recepcjonista", "Klient" })

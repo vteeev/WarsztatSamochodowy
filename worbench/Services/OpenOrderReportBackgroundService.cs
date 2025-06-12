@@ -42,7 +42,7 @@ namespace worbench.Services
                     Console.WriteLine("Generowanie i wysyłka raportu...");
 
                     await SendEmailWithAttachmentAsync(
-                        "damian.skiba.9413.2@gmail.com", // <- adres admina
+                        "niesciorpiotr72@gmail.com", // <- adres admina
                         "Raport otwartych zleceń",
                         "W załączniku raport PDF z otwartymi zleceniami.",
                         pdfPath

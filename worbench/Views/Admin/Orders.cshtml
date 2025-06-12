@@ -26,7 +26,7 @@
             <td>@o.Status</td>
             <td>@(o.MechanicEmail ?? "-")</td>
             <td>
-                <a asp-action="AssignMechanic" asp-route-orderId="@o.Id" class="btn btn-sm btn-primary">Przypisz mechanika</a>
+                <a asp-action="AssignMechanic" asp-route-id="@o.Id" class="btn btn-sm btn-primary">Przypisz mechanika</a>
             </td>
         </tr>
     }

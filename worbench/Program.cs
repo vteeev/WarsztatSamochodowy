@@ -24,6 +24,27 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<WorkshopDbContext>();
 
+// Add service registrations
+builder.Services.AddScoped<IClientService>(sp => 
+{
+    var context = sp.GetRequiredService<WorkshopDbContext>();
+    return new ClientService(context);
+});
+
+builder.Services.AddScoped<IMechanicService>(sp => 
+{
+    var context = sp.GetRequiredService<WorkshopDbContext>();
+    return new MechanicService(context);
+});
+
+builder.Services.AddScoped<IAdminService>(sp => 
+{
+    var context = sp.GetRequiredService<WorkshopDbContext>();
+    var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = sp.GetRequiredService<RoleManager<ApplicationRole>>();
+    return new AdminService(userManager, roleManager, context);
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
