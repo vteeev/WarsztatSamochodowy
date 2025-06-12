@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using worbench.Data;
 using worbench.Models;
+using worbench.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<WorkshopDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// Dodaj HostedService tutaj:
+builder.Services.AddHostedService<OpenOrderReportBackgroundService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -67,7 +71,6 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -86,4 +89,3 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
-
