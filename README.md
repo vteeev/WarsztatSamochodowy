@@ -115,3 +115,4 @@ README.md z opisem projektu, logowania, rolami
 Wszystkie dane domenowe mapuj za pomocą Mapperly
 Używaj DataAnnotations do walidacji
 Dbaj o separację warstw: logika w serwisach, nie w kontrolerach
+
