@@ -1212,3 +1212,8 @@ C:\Users\piotr\Code\MO\dobrze\WarsztatSamochodowy\worbench\obj\Debug\net8.0\stat
 C:\Users\piotr\Code\MO\dobrze\WarsztatSamochodowy\worbench\obj\Debug\net8.0\worbench.csproj.Up2Date
 C:\Users\piotr\Code\MO\dobrze\WarsztatSamochodowy\worbench\obj\Debug\net8.0\worbench.genruntimeconfig.cache
 C:\Users\piotr\Code\MO\dobrze\WarsztatSamochodowy\worbench\obj\Debug\net8.0\ref\worbench.dll
+C:\Users\damia\Desktop\Studia\.NET\PROJEKT\WarsztatSamochodowy\worbench\bin\Debug\net8.0\Castle.Core.dll
+C:\Users\damia\Desktop\Studia\.NET\PROJEKT\WarsztatSamochodowy\worbench\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.InMemory.dll
+C:\Users\damia\Desktop\Studia\.NET\PROJEKT\WarsztatSamochodowy\worbench\bin\Debug\net8.0\Moq.dll
+C:\Users\damia\Desktop\Studia\.NET\PROJEKT\WarsztatSamochodowy\worbench\bin\Debug\net8.0\nunit.framework.dll
+C:\Users\damia\Desktop\Studia\.NET\PROJEKT\WarsztatSamochodowy\worbench\bin\Debug\net8.0\nunit.framework.legacy.dll
