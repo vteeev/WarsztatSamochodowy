@@ -2,39 +2,48 @@
 @{
     var task = ViewBag.Task as worbench.Models.ServiceTask;
 }
-<h2>Części do czynności #@task.Id</h2>
-<a asp-action="AddPart" asp-route-taskId="@task.Id" class="btn btn-success mb-2">Dodaj część</a>
-<table class="table">
-    <thead>
+
+@if (task != null)
+{
+    <h2>Części do czynności #@task.Id</h2>
+    <a asp-action="AddPart" asp-route-taskId="@task.Id" class="btn btn-success mb-2">Dodaj część</a>
+    <table class="table">
+        <thead>
         <tr>
             <th>Nazwa części</th>
             <th>Ilość</th>
             <th>Cena jednostkowa</th>
             <th>Suma</th>
         </tr>
-    </thead>
-    <tbody>
-    @{
-        decimal total = 0;
-    }
-    @foreach (var p in Model)
-    {
-        var unit = p.Part?.UnitPrice ?? 0;
-        var sum = unit * p.Quantity;
-        total += sum;
-        <tr>
-            <td>@p.Part?.Name</td>
-            <td>@p.Quantity</td>
-            <td>@unit.ToString("C")</td>
-            <td>@sum.ToString("C")</td>
-        </tr>
-    }
-    </tbody>
-    <tfoot>
+        </thead>
+        <tbody>
+        @{
+            decimal total = 0;
+        }
+        @foreach (var p in Model)
+        {
+            var unit = p.Part?.UnitPrice ?? 0;  // Sprawdzamy cenę jednostkową
+            var sum = unit * p.Quantity;  // Obliczamy sumę
+            total += sum;  // Dodajemy do sumy
+            <tr>
+                <td>@p.Part?.Name</td>  // Nazwa części
+                <td>@p.Quantity</td>  // Ilość
+                <td>@unit.ToString("C")</td>  // Cena jednostkowa
+                <td>@sum.ToString("C")</td>  // Suma
+            </tr>
+        }
+        </tbody>
+        <tfoot>
         <tr>
             <th colspan="3" class="text-end">Suma części:</th>
             <th>@total.ToString("C")</th>
         </tr>
-    </tfoot>
-</table>
-<a asp-action="ServiceTasks" asp-route-orderId="@task.ServiceOrderId" class="btn btn-secondary">Powrót</a> 
+        </tfoot>
+    </table>
+    <a asp-action="ServiceTasks" asp-route-orderId="@task.ServiceOrderId" class="btn btn-secondary">Powrót</a>
+}
+else
+{
+    <h2>Brak danych zadania</h2>
+    <a class="btn btn-secondary" disabled>err</a>
+}

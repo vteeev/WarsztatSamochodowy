@@ -57,7 +57,7 @@ namespace worbench.Services
                     Console.WriteLine($"Błąd w OpenOrderReportBackgroundService: {ex.Message}");
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
             }
         }
 
