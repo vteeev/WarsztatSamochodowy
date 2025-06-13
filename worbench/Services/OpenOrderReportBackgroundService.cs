@@ -28,30 +28,39 @@ namespace worbench.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = _serviceProvider.CreateScope())
+                try
                 {
+                    using var scope = _serviceProvider.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<WorkshopDbContext>();
                     var orders = await context.ServiceOrders
                         .Include(o => o.Vehicle)
                         .Where(o => o.Status != "Gotowe")
                         .ToListAsync();
 
-                    var pdfPath = Path.Combine("wwwroot", "open_orders.pdf");
+                    var webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+                    if (!Directory.Exists(webRoot))
+                        Directory.CreateDirectory(webRoot);
+
+                    var pdfPath = Path.Combine(webRoot, "open_orders.pdf");
                     GeneratePdfReport(orders, pdfPath);
-                    
+
                     Console.WriteLine("Generowanie i wysyłka raportu...");
 
                     await SendEmailWithAttachmentAsync(
-                        "niesciorpiotr72@gmail.com", // <- adres admina
+                        "damian.skiba.9413@gmail.com",
                         "Raport otwartych zleceń",
                         "W załączniku raport PDF z otwartymi zleceniami.",
-                        pdfPath
-                    );
+                        pdfPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Błąd w OpenOrderReportBackgroundService: {ex.Message}");
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken); // zmień na 1 dzień w produkcji
+                await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);
             }
         }
+
 
         private void GeneratePdfReport(System.Collections.Generic.List<Models.ServiceOrder> orders, string path)
         {

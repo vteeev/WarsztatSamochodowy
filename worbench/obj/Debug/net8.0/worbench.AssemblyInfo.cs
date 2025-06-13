@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("worbench")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+59836d082ec1f98d985a9bd16cb8e994c9454db2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+08519e0b5b918f45766976476eea39c6d99028c4")]
 [assembly: System.Reflection.AssemblyProductAttribute("worbench")]
 [assembly: System.Reflection.AssemblyTitleAttribute("worbench")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

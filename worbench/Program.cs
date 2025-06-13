@@ -33,9 +33,11 @@ builder.Services.AddScoped<IClientService>(sp =>
 
 builder.Services.AddScoped<IMechanicService>(sp => 
 {
+    var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
     var context = sp.GetRequiredService<WorkshopDbContext>();
-    return new MechanicService(context);
+    return new MechanicService(userManager, context);
 });
+
 
 builder.Services.AddScoped<IAdminService>(sp => 
 {

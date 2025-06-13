@@ -1092,8 +1092,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>pnuztv6sw2</Fingerprint>
-      <Integrity>9f5rvbTtaRk5wqHRnwU1EKuITUMvCIAPwV/7+KQudaU=</Integrity>
+      <Fingerprint>qmac9vk96b</Fingerprint>
+      <Integrity>Ljr3eP5VjaLXSOAXQrFXsquQ0N5shxiOtvALjc2DRZM=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\open_orders.pdf'))</OriginalItemSpec>

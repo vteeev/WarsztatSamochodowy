@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using worbench.Models;
 using worbench.Services;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using worbench.DTOs;
 
 namespace worbench.Controllers
 {
@@ -22,18 +22,20 @@ namespace worbench.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var orders = await _mechanicService.GetDashboardData(user.Id);
+            var orders = await _mechanicService.GetAssignedOrders(User);
             return View(orders);
         }
 
         public async Task<IActionResult> ServiceTasks(int orderId)
         {
+            var order = await _mechanicService.GetOrderById(orderId, User);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Order = order;
+
             var tasks = await _mechanicService.GetServiceTasks(orderId);
             return View(tasks);
         }
@@ -49,22 +51,22 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTask(int orderId, string description, decimal laborCost)
         {
-            var result = await _mechanicService.AddServiceTask(orderId, description, laborCost);
-            if (result.Message != null)
+            var (result, message) = await _mechanicService.AddServiceTask(orderId, description, laborCost, User);
+            if (!string.IsNullOrEmpty(message))
             {
-                TempData["Success"] = result.Message;
+                TempData["Success"] = message;
             }
-            return result.Result;
+            return result;
         }
 
         public async Task<IActionResult> Parts(int taskId)
         {
-            var parts = await _mechanicService.GetUsedParts(taskId);
+            var parts = await _mechanicService.GetUsedParts(taskId, User);
             return View(parts);
         }
 
         [HttpGet]
-        public IActionResult AddPart(int taskId)
+        public async Task<IActionResult> AddPart(int taskId)
         {
             ViewBag.TaskId = taskId;
             ViewBag.Parts = await _mechanicService.GetAvailableParts();
@@ -75,18 +77,18 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPart(int taskId, int partId, int quantity)
         {
-            var result = await _mechanicService.AddUsedPart(taskId, partId, quantity);
-            if (result.Message != null)
+            var (result, message) = await _mechanicService.AddUsedPart(taskId, partId, quantity, User);
+            if (!string.IsNullOrEmpty(message))
             {
-                TempData["Success"] = result.Message;
+                TempData["Success"] = message;
             }
-            return result.Result;
+            return result;
         }
 
         [HttpGet]
-        public IActionResult EditStatus(int id)
+        public async Task<IActionResult> EditStatus(int id)
         {
-            var order = await _mechanicService.GetOrderById(id);
+            var order = await _mechanicService.GetOrderById(id, User);
             if (order == null) return NotFound();
 
             ViewBag.Statuses = new[] { "Nowe", "W trakcie", "Oczekuje na części", "Zakończone", "Anulowane" };
@@ -97,12 +99,12 @@ namespace worbench.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditStatus(int id, string status)
         {
-            var result = await _mechanicService.UpdateOrderStatus(id, status);
-            if (result.Message != null)
+            var (result, message) = await _mechanicService.UpdateOrderStatus(id, status, User);
+            if (!string.IsNullOrEmpty(message))
             {
-                TempData["Success"] = result.Message;
+                TempData["Success"] = message;
             }
-            return result.Result;
+            return result;
         }
     }
-} 
+}

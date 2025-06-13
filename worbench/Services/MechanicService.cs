@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using worbench.Models;
 using worbench.Data;
-using worbench.DTOs;
+using worbench.Models;
 
 namespace worbench.Services
 {
@@ -20,29 +21,34 @@ namespace worbench.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<ServiceOrder>> GetAssignedOrders()
+        public async Task<IEnumerable<ServiceOrder>> GetAssignedOrders(ClaimsPrincipal user)
         {
-            var user = await _userManager.GetUserAsync(System.Security.Claims.ClaimsPrincipal.Current);
+            var appUser = await _userManager.GetUserAsync(user);
+            if (appUser == null) return new List<ServiceOrder>();
+
             return await _context.ServiceOrders
                 .Include(o => o.Vehicle)
                 .Include(o => o.ServiceTasks)
                     .ThenInclude(t => t.UsedParts)
                         .ThenInclude(p => p.Part)
-                .Where(o => o.AssignedMechanicId == user.Id)
+                .Where(o => o.AssignedMechanicId == appUser.Id)
                 .ToListAsync();
         }
 
-        public async Task<ServiceOrder> GetOrderById(int id)
+        public async Task<ServiceOrder> GetOrderById(int id, ClaimsPrincipal user)
         {
-            var user = await _userManager.GetUserAsync(System.Security.Claims.ClaimsPrincipal.Current);
+            var appUser = await _userManager.GetUserAsync(user);
+            if (appUser == null) return null;
+
             return await _context.ServiceOrders
                 .Include(o => o.Vehicle)
-                .FirstOrDefaultAsync(o => o.Id == id && o.AssignedMechanicId == user.Id);
+                .Include(o => o.ServiceTasks)
+                .FirstOrDefaultAsync(o => o.Id == id && o.AssignedMechanicId == appUser.Id);
         }
 
-        public async Task<(IActionResult Result, string Message)> UpdateOrderStatus(int orderId, string status)
+        public async Task<(IActionResult Result, string Message)> UpdateOrderStatus(int orderId, string status, ClaimsPrincipal user)
         {
-            var order = await GetOrderById(orderId);
+            var order = await GetOrderById(orderId, user);
             if (order == null)
             {
                 return (new NotFoundResult(), "Zlecenie nie zostało znalezione.");
@@ -50,15 +56,11 @@ namespace worbench.Services
 
             order.Status = status;
             await _context.SaveChangesAsync();
-            return (new RedirectToActionResult("Dashboard", "Mechanic", null),
-                "Status zlecenia został zaktualizowany.");
+            return (new RedirectToActionResult("Dashboard", "Mechanic", null), "Status zlecenia został zaktualizowany.");
         }
 
         public async Task<IEnumerable<ServiceTask>> GetServiceTasks(int orderId)
         {
-            var order = await GetOrderById(orderId);
-            if (order == null) return new List<ServiceTask>();
-
             return await _context.ServiceTasks
                 .Include(t => t.UsedParts)
                     .ThenInclude(p => p.Part)
@@ -66,9 +68,9 @@ namespace worbench.Services
                 .ToListAsync();
         }
 
-        public async Task<(IActionResult Result, string Message)> AddServiceTask(int orderId, string description, decimal laborCost)
+        public async Task<(IActionResult Result, string Message)> AddServiceTask(int orderId, string description, decimal laborCost, ClaimsPrincipal user)
         {
-            var order = await GetOrderById(orderId);
+            var order = await GetOrderById(orderId, user);
             if (order == null)
             {
                 return (new NotFoundResult(), "Zlecenie nie zostało znalezione.");
@@ -83,20 +85,19 @@ namespace worbench.Services
 
             _context.ServiceTasks.Add(task);
             await _context.SaveChangesAsync();
-            return (new RedirectToActionResult("ServiceTasks", "Mechanic", new { orderId }),
-                "Czynność została dodana.");
+            return (new RedirectToActionResult("ServiceTasks", "Mechanic", new { orderId }), "Czynność została dodana.");
         }
 
-        public async Task<IEnumerable<UsedPart>> GetUsedParts(int taskId)
+        public async Task<IEnumerable<UsedPart>> GetUsedParts(int taskId, ClaimsPrincipal user)
         {
             var task = await _context.ServiceTasks
                 .Include(t => t.ServiceOrder)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
-            
+
             if (task == null) return new List<UsedPart>();
 
-            var user = await _userManager.GetUserAsync(System.Security.Claims.ClaimsPrincipal.Current);
-            if (task.ServiceOrder.AssignedMechanicId != user.Id)
+            var appUser = await _userManager.GetUserAsync(user);
+            if (task.ServiceOrder.AssignedMechanicId != appUser.Id)
             {
                 return new List<UsedPart>();
             }
@@ -112,21 +113,21 @@ namespace worbench.Services
             return await _context.Parts.ToListAsync();
         }
 
-        public async Task<(IActionResult Result, string Message)> AddUsedPart(int taskId, int partId, int quantity)
+        public async Task<(IActionResult Result, string Message)> AddUsedPart(int taskId, int partId, int quantity, ClaimsPrincipal user)
         {
             var task = await _context.ServiceTasks
                 .Include(t => t.ServiceOrder)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
-            
+
             if (task == null)
             {
                 return (new NotFoundResult(), "Czynność nie została znaleziona.");
             }
 
-            var user = await _userManager.GetUserAsync(System.Security.Claims.ClaimsPrincipal.Current);
-            if (task.ServiceOrder.AssignedMechanicId != user.Id)
+            var appUser = await _userManager.GetUserAsync(user);
+            if (task.ServiceOrder.AssignedMechanicId != appUser.Id)
             {
-                return (new NotFoundResult(), "Nie masz uprawnień do tej czynności.");
+                return (new ForbidResult(), "Nie masz uprawnień do tej czynności.");
             }
 
             var part = await _context.Parts.FindAsync(partId);
@@ -144,8 +145,7 @@ namespace worbench.Services
 
             _context.UsedParts.Add(usedPart);
             await _context.SaveChangesAsync();
-            return (new RedirectToActionResult("Parts", "Mechanic", new { taskId }),
-                "Część została dodana.");
+            return (new RedirectToActionResult("Parts", "Mechanic", new { taskId }), "Część została dodana.");
         }
     }
-} 
+}
